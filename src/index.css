@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply font-cairo bg-primary-950 text-stone-100;
+    background: linear-gradient(135deg, #050f1f 0%, #0a1e3d 50%, #050f1f 100%);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-primary-900/30;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-secondary-500/50 hover:bg-secondary-600 rounded-full;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white/10 border border-white/10 rounded-xl shadow-lg backdrop-blur-sm hover:border-secondary-500/30 transition-all duration-300;
+  }
+
+  .card-hover {
+    @apply hover:bg-white/15 hover:shadow-xl hover:border-secondary-500/50 hover:backdrop-blur-md;
+  }
+
+  .page-title {
+    @apply text-3xl font-bold bg-gradient-to-r from-white to-secondary-300 bg-clip-text text-transparent;
+  }
+
+  .section-kicker {
+    @apply inline-block text-xs font-bold tracking-wider text-secondary-400 uppercase mb-2;
+  }
+
+  .field-label {
+    @apply block text-sm font-semibold text-stone-200 mb-2;
+  }
+
+  .input-field {
+    @apply bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-stone-100 placeholder-stone-400 focus:border-secondary-500/50 focus:bg-white/15 focus:outline-none transition-all;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 bg-gradient-to-r from-secondary-600 to-secondary-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-secondary-500/50 transition-all duration-300;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-white/10 border border-white/20 text-stone-100 font-semibold rounded-lg hover:bg-white/20 hover:border-secondary-500/50 transition-all duration-300;
+  }
+
+  .badge-success {
+    @apply inline-block px-3 py-1 bg-green-500/20 text-green-400 text-xs font-semibold rounded-full border border-green-500/30;
+  }
+
+  .badge-danger {
+    @apply inline-block px-3 py-1 bg-red-500/20 text-red-400 text-xs font-semibold rounded-full border border-red-500/30;
+  }
+
+  .badge-warning {
+    @apply inline-block px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs font-semibold rounded-full border border-yellow-500/30;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  .slide-in {
+    animation: slideIn 0.6s ease-out;
+  }
+
+  .scale-in {
+    animation: scaleIn 0.4s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Mapbox popup/marker RTL-safe overrides */
+.mapboxgl-popup-content {
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+  background: rgba(5, 15, 31, 0.95) !important;
+  border: 1px solid rgba(217, 119, 6, 0.3) !important;
+  border-radius: 0.75rem;
+  color: #e5e7eb;
+}
