@@ -10,7 +10,7 @@
   }
 
   body {
-    @apply font-cairo bg-primary-950 text-stone-100;
+    @apply font-cairo bg-primary-900 text-stone-100;
     background: linear-gradient(135deg, #050f1f 0%, #0a1e3d 50%, #050f1f 100%);
   }
 
