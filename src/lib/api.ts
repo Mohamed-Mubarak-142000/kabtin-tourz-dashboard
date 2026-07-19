@@ -1,8 +1,12 @@
 import axios from 'axios'
 import { clearToken, getToken } from './auth'
 
+const DEFAULT_API_URL = import.meta.env.DEV
+  ? 'http://localhost:5000/api'
+  : 'https://kabtin-tourz-server.vercel.app/api'
+
 export const API_URL: string =
-  (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000/api'
+  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') || DEFAULT_API_URL
 
 export const api = axios.create({
   baseURL: API_URL,
