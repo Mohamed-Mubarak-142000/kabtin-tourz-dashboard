@@ -63,7 +63,7 @@ export default function BranchesList() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex h-full min-h-0 flex-col gap-5 overflow-hidden">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <h1 className="page-title">الفروع</h1>
@@ -83,8 +83,9 @@ export default function BranchesList() {
       ) : error ? (
         <ErrorState message={error} onRetry={load} />
       ) : (
-        <div className="card overflow-hidden">
-          <Table aria-label="جدول الفروع" removeWrapper>
+        <div className="table-card">
+          <div className="table-scroll">
+          <Table aria-label="جدول الفروع" removeWrapper classNames={{ table: 'dashboard-table min-w-[800px]' }}>
             <TableHeader>
               <TableColumn>الاسم</TableColumn>
               <TableColumn>العنوان</TableColumn>
@@ -132,6 +133,7 @@ export default function BranchesList() {
               ))}
             </TableBody>
           </Table>
+          </div>
           <TablePagination meta={pagination} onChange={setPage} />
         </div>
       )}

@@ -66,7 +66,7 @@ export default function TestimonialsList() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex h-full min-h-0 flex-col gap-5 overflow-hidden">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <h1 className="page-title">التقييمات</h1>
@@ -88,8 +88,9 @@ export default function TestimonialsList() {
       ) : error ? (
         <ErrorState message={error} onRetry={load} />
       ) : (
-        <div className="card overflow-hidden">
-          <Table aria-label="جدول التقييمات" removeWrapper>
+        <div className="table-card">
+          <div className="table-scroll">
+          <Table aria-label="جدول التقييمات" removeWrapper classNames={{ table: 'dashboard-table min-w-[820px]' }}>
             <TableHeader>
               <TableColumn>العميل</TableColumn>
               <TableColumn>النص</TableColumn>
@@ -146,6 +147,7 @@ export default function TestimonialsList() {
               ))}
             </TableBody>
           </Table>
+          </div>
           <TablePagination meta={pagination} onChange={setPage} />
         </div>
       )}

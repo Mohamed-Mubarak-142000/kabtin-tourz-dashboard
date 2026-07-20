@@ -14,7 +14,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
   const confirm = useConfirmation()
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-stone-200 bg-white/80 px-4 backdrop-blur dark:border-stone-800 dark:bg-stone-900/80">
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between border-b border-stone-200 bg-white/80 px-4 backdrop-blur dark:border-stone-800 dark:bg-stone-900/80">
       <button
         onClick={onMenuClick}
         className="rounded-md p-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800 lg:hidden"

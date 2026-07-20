@@ -166,6 +166,11 @@ export async function getPaginatedLeads(page: number, limit = 5) {
   return res.data
 }
 
+export async function getLead(id: string) {
+  const res = await api.get<ApiResponse<Lead>>(`/leads/${id}`)
+  return res.data
+}
+
 export async function updateLeadStatus(id: string, status: LeadStatus) {
   const res = await api.patch<ApiResponse<Lead>>(`/leads/${id}`, { status })
   return res.data

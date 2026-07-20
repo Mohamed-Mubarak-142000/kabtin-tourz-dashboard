@@ -12,6 +12,7 @@ import TestimonialForm from '@/pages/testimonials/TestimonialForm'
 import FaqsList from '@/pages/faqs/FaqsList'
 import LeadsList from '@/pages/leads/LeadsList'
 import LeadForm from '@/pages/leads/LeadForm'
+import LeadView from '@/pages/leads/LeadView'
 import SettingsPage from '@/pages/settings/SettingsPage'
 import NotFound from '@/pages/NotFound'
 
@@ -40,6 +41,7 @@ export default function App() {
 
         <Route path="/leads" element={<LeadsList />} />
         <Route path="/leads/new" element={<LeadForm />} />
+        <Route path="/leads/:id" element={<LeadView />} />
 
         <Route path="/settings" element={<SettingsPage />} />
       </Route>

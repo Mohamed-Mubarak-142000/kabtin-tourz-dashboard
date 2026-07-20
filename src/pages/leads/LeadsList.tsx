@@ -12,7 +12,7 @@ import {
   SelectItem,
   Chip,
 } from '@nextui-org/react'
-import { HiOutlinePlus, HiOutlineTrash } from 'react-icons/hi'
+import { HiOutlineEye, HiOutlinePlus, HiOutlineTrash } from 'react-icons/hi'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import ConfirmDialog from '@/components/common/ConfirmDialog'
@@ -102,7 +102,7 @@ export default function LeadsList() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex h-full min-h-0 flex-col gap-5 overflow-hidden">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
         <h1 className="page-title">طلبات الحجز</h1>
@@ -118,50 +118,27 @@ export default function LeadsList() {
       ) : error ? (
         <ErrorState message={error} onRetry={load} />
       ) : (
-        <div className="card overflow-hidden">
-          <Table aria-label="جدول طلبات الحجز" removeWrapper>
+        <div className="table-card">
+          <div className="table-scroll">
+          <Table aria-label="جدول طلبات الحجز" removeWrapper classNames={{ table: 'dashboard-table min-w-[1100px]' }}>
             <TableHeader>
               <TableColumn>الاسم</TableColumn>
               <TableColumn>واتساب</TableColumn>
-              <TableColumn>الخدمة</TableColumn>
-              <TableColumn>الفرع</TableColumn>
-              <TableColumn>عدد الأفراد</TableColumn>
-              <TableColumn>نوع الغرفة</TableColumn>
-              <TableColumn>الرسالة</TableColumn>
+              <TableColumn>الرحلة</TableColumn>
+              <TableColumn>الإجمالي</TableColumn>
               <TableColumn>الحالة</TableColumn>
               <TableColumn>التاريخ</TableColumn>
-              <TableColumn>حذف</TableColumn>
+              <TableColumn>الإجراءات</TableColumn>
             </TableHeader>
             <TableBody emptyContent="لا توجد طلبات حجز بعد">
               {leads.map((lead) => (
                 <TableRow key={lead._id}>
-                  <TableCell>
-                    <div className="min-w-40">
-                      <p className="font-medium">{lead.name}</p>
-                      <p className="text-xs text-stone-500">{lead.nationality} · {lead.identityNumber}</p>
-                      {lead.email && <p dir="ltr" className="text-left text-xs text-stone-500">{lead.email}</p>}
-                    </div>
+                  <TableCell className="font-medium">{lead.name}</TableCell>
+                  <TableCell dir="ltr">{lead.whatsapp}</TableCell>
+                  <TableCell className="font-medium">{lead.tripTitle ?? lead.serviceCategory}</TableCell>
+                  <TableCell className="font-bold text-primary-600">
+                    {lead.totalPrice != null ? `${lead.totalPrice.toLocaleString('ar-EG')} ${lead.currency}` : '—'}
                   </TableCell>
-                  <TableCell dir="ltr"><div>{lead.whatsapp}</div>{lead.phone && <div className="text-xs text-stone-500">{lead.phone}</div>}</TableCell>
-                  <TableCell>
-                    <div className="min-w-40">
-                      <p className="font-medium">{lead.tripTitle ?? lead.serviceCategory}</p>
-                      {lead.totalPrice != null && <p className="text-sm font-bold text-primary-600">{lead.totalPrice.toLocaleString('ar-EG')} {lead.currency}</p>}
-                    </div>
-                  </TableCell>
-                  <TableCell>{lead.branch}</TableCell>
-                  <TableCell>{lead.guests}</TableCell>
-                  <TableCell>
-                    <div>{lead.roomType}</div>
-                    <div className="text-xs text-stone-500">{lead.paymentMethod}</div>
-                    {lead.paymentProof && (
-                      <a href={lead.paymentProof} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-2 text-xs text-primary-600 hover:underline">
-                        <img src={lead.paymentProof} alt="إيصال التحويل" className="h-10 w-10 rounded-md object-cover" />
-                        عرض الإيصال
-                      </a>
-                    )}
-                  </TableCell>
-                  <TableCell className="max-w-[200px] truncate">{lead.message}</TableCell>
                   <TableCell>
                     <Select
                       size="sm"
@@ -187,21 +164,20 @@ export default function LeadsList() {
                     {new Date(lead.createdAt).toLocaleString('ar-EG')}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      variant="light"
-                      color="danger"
-                      aria-label="حذف"
-                      onPress={() => setDeleteTarget(lead)}
-                    >
-                      <HiOutlineTrash className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button isIconOnly size="sm" variant="flat" color="primary" aria-label="عرض التفاصيل" onPress={() => navigate(`/leads/${lead._id}`)}>
+                        <HiOutlineEye className="h-4 w-4" />
+                      </Button>
+                      <Button isIconOnly size="sm" variant="light" color="danger" aria-label="حذف" onPress={() => setDeleteTarget(lead)}>
+                        <HiOutlineTrash className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          </div>
           <TablePagination meta={pagination} onChange={setPage} />
         </div>
       )}

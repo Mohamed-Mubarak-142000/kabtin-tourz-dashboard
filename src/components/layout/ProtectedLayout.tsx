@@ -19,7 +19,7 @@ function AnimatedOutlet() {
   }, [location.pathname])
 
   return (
-    <div key={location.pathname} ref={containerRef}>
+    <div key={location.pathname} ref={containerRef} className="h-full min-w-0">
       <Outlet />
     </div>
   )
@@ -34,11 +34,11 @@ export default function ProtectedLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-stone-50 dark:bg-stone-950">
+    <div className="flex h-screen min-w-0 overflow-hidden bg-stone-50 dark:bg-stone-950">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex min-h-screen w-full flex-1 flex-col">
+      <div className="flex h-screen min-w-0 flex-1 flex-col">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 p-4 md:p-6">
+        <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6">
           <AnimatedOutlet />
         </main>
       </div>
