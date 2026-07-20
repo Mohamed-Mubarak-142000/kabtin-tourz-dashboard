@@ -4,6 +4,18 @@ export type ApiResponse<T> = {
   error?: string
 }
 
+export type PaginationMeta = {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
+export type PaginatedData<T> = {
+  items: T[]
+  pagination: PaginationMeta
+}
+
 export type TripCategory =
   | 'hajj'
   | 'umrah'
@@ -11,6 +23,8 @@ export type TripCategory =
   | 'domestic'
   | 'international'
   | 'visa'
+
+export type TripType = 'religious' | 'tourism'
 
 export type Location = {
   lat: number
@@ -23,6 +37,7 @@ export type Trip = {
   title: string
   slug: string
   category: TripCategory
+  tripType: TripType
   price: number
   currency: string
   duration: string
@@ -31,7 +46,6 @@ export type Trip = {
   images: string[]
   location?: Location
   description: string
-  featured: boolean
   published: boolean
 }
 
@@ -76,19 +90,46 @@ export type Faq = {
 
 export type FaqInput = Omit<Faq, '_id'>
 
-export type LeadStatus = 'new' | 'contacted' | 'closed'
+export type LeadStatus = 'new' | 'contacted' | 'confirmed' | 'payment_pending' | 'paid' | 'cancelled' | 'closed'
 
 export type Lead = {
   _id: string
   name: string
   whatsapp: string
+  phone?: string
+  email?: string
+  nationality: string
+  identityNumber: string
+  trip: string
+  tripTitle: string
+  unitPrice: number
+  totalPrice: number
+  currency: string
   serviceCategory: string
   branch: string
   guests: number
   roomType: string
+  paymentMethod: 'cash' | 'bank_transfer' | 'instapay' | 'vodafone_cash'
+  paymentProof?: string
   message: string
   status: LeadStatus
   createdAt: string
+}
+
+export type LeadInput = {
+  name: string
+  whatsapp: string
+  phone?: string
+  email?: string
+  nationality: string
+  identityNumber: string
+  tripId: string
+  branch?: string
+  guests: number
+  roomType: string
+  paymentMethod: 'cash' | 'bank_transfer' | 'instapay' | 'vodafone_cash'
+  paymentProof?: string
+  message?: string
 }
 
 export type SocialLinks = {

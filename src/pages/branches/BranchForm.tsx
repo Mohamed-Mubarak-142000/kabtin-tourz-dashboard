@@ -10,6 +10,7 @@ import MapPicker from '@/components/common/MapPicker'
 import { branchSchema, type BranchFormValues } from '@/schemas'
 import { createBranch, getBranches, updateBranch } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
+import { useConfirmation } from '@/contexts/ConfirmationContext'
 
 const emptyValues: BranchFormValues = {
   name: '',
@@ -24,6 +25,7 @@ export default function BranchForm() {
   const { id } = useParams()
   const isEdit = !!id
   const navigate = useNavigate()
+  const confirm = useConfirmation()
 
   const [loading, setLoading] = useState(isEdit)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -73,6 +75,7 @@ export default function BranchForm() {
   }, [id])
 
   const onSubmit = async (values: BranchFormValues) => {
+    if (!(await confirm({ title: isEdit ? 'تأكيد تعديل الفرع' : 'تأكيد إضافة الفرع', message: `هل تريد حفظ بيانات الفرع "${values.name}"؟`, confirmLabel: 'حفظ', confirmColor: 'primary' }))) return
     setSubmitError(null)
     try {
       if (isEdit && id) {

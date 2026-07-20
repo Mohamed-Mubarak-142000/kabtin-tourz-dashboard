@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Table,
@@ -14,51 +14,83 @@ import {
   Switch,
   Chip,
 } from '@nextui-org/react'
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineSearch } from 'react-icons/hi'
+import {
+  HiOutlinePlus,
+  HiOutlinePencil,
+  HiOutlineTrash,
+  HiOutlineSearch,
+  HiOutlineEye,
+} from 'react-icons/hi'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import ConfirmDialog from '@/components/common/ConfirmDialog'
-import { deleteTrip, getTrips, updateTrip } from '@/lib/services'
+import TablePagination from '@/components/common/TablePagination'
+import { deleteTrip, getPaginatedTrips, updateTrip } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
-import { categoryLabels, categoryOptions } from '@/lib/constants'
-import type { Trip } from '@/types'
+import { categoryLabels, categoryOptions, tripTypeLabels, tripTypeOptions } from '@/lib/constants'
+import type { PaginationMeta, Trip } from '@/types'
+import { useConfirmation } from '@/contexts/ConfirmationContext'
+
+const PAGE_SIZE = 5
 
 export default function TripsList() {
   const navigate = useNavigate()
+  const confirm = useConfirmation()
   const [trips, setTrips] = useState<Trip[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [category, setCategory] = useState<string>('')
+  const [tripType, setTripType] = useState<string>('')
   const [deleteTarget, setDeleteTarget] = useState<Trip | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-
-  const load = async () => {
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState<PaginationMeta>({ page: 1, limit: PAGE_SIZE, total: 0, totalPages: 1 })
+  const load = async (signal?: AbortSignal) => {
     setLoading(true)
     setError(null)
     try {
-      const res = await getTrips()
-      setTrips(res.data ?? [])
+      const res = await getPaginatedTrips({
+        category: category || undefined,
+        tripType: tripType || undefined,
+        search: debouncedSearch.trim() || undefined,
+        page,
+        limit: PAGE_SIZE,
+      }, signal)
+      setTrips(res.data?.items ?? [])
+      if (res.data?.pagination) setPagination(res.data.pagination)
     } catch (err) {
+      if (signal?.aborted) return
       setError(apiErrorMessage(err))
     } finally {
-      setLoading(false)
+      if (!signal?.aborted) setLoading(false)
     }
   }
 
   useEffect(() => {
-    load()
-  }, [])
+    const timeout = window.setTimeout(() => setDebouncedSearch(search), 500)
+    return () => window.clearTimeout(timeout)
+  }, [search])
 
-  const filtered = useMemo(() => {
-    return trips.filter((t) => {
-      const matchesSearch = t.title.toLowerCase().includes(search.toLowerCase())
-      const matchesCategory = category ? t.category === category : true
-      return matchesSearch && matchesCategory
-    })
-  }, [trips, search, category])
+  useEffect(() => {
+    const controller = new AbortController()
+    load(controller.signal)
+    return () => controller.abort()
+    // load intentionally reruns only when a debounced server-side filter changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, category, tripType, page])
+
+  useEffect(() => setPage(1), [debouncedSearch, category, tripType])
 
   const togglePublished = async (trip: Trip) => {
+    const accepted = await confirm({
+      title: trip.published ? 'إلغاء نشر الرحلة' : 'نشر الرحلة',
+      message: `هل تريد ${trip.published ? 'إلغاء نشر' : 'نشر'} الرحلة "${trip.title}"؟`,
+      confirmLabel: trip.published ? 'إلغاء النشر' : 'نشر',
+      confirmColor: trip.published ? 'warning' : 'success',
+    })
+    if (!accepted) return
     const prev = trips
     setTrips((cur) =>
       cur.map((t) => (t._id === trip._id ? { ...t, published: !t.published } : t))
@@ -123,6 +155,18 @@ export default function TripsList() {
             </SelectItem>
           ))}
         </Select>
+        <Select
+          placeholder="كل أنواع الرحلات"
+          selectedKeys={tripType ? [tripType] : []}
+          onSelectionChange={(keys) => setTripType((Array.from(keys)[0] as string) ?? '')}
+          className="sm:max-w-xs"
+        >
+          {tripTypeOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </Select>
       </div>
 
       {loading ? (
@@ -133,6 +177,7 @@ export default function TripsList() {
         <div className="card overflow-hidden">
           <Table aria-label="جدول الرحلات" removeWrapper>
             <TableHeader>
+              <TableColumn>النوع</TableColumn>
               <TableColumn>العنوان</TableColumn>
               <TableColumn>الفئة</TableColumn>
               <TableColumn>السعر</TableColumn>
@@ -140,8 +185,13 @@ export default function TripsList() {
               <TableColumn>الإجراءات</TableColumn>
             </TableHeader>
             <TableBody emptyContent="لا توجد رحلات مطابقة">
-              {filtered.map((trip) => (
+              {trips.map((trip) => (
                 <TableRow key={trip._id}>
+                  <TableCell>
+                    <Chip size="sm" variant="flat" color={trip.tripType === 'religious' ? 'primary' : 'secondary'}>
+                      {tripTypeLabels[trip.tripType ?? (['hajj', 'umrah'].includes(trip.category) ? 'religious' : 'tourism')]}
+                    </Chip>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {trip.images[0] && (
@@ -155,16 +205,13 @@ export default function TripsList() {
                         <p className="font-medium text-stone-800 dark:text-stone-100">
                           {trip.title}
                         </p>
-                        {trip.featured && (
-                          <Chip size="sm" color="secondary" variant="flat">
-                            مميزة
-                          </Chip>
-                        )}
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{categoryLabels[trip.category]}</TableCell>
-                  <TableCell>
+                  <TableCell className="text-stone-700 dark:text-stone-200">
+                    {categoryLabels[trip.category]}
+                  </TableCell>
+                  <TableCell className="font-medium text-stone-700 dark:text-stone-200">
                     {trip.price} {trip.currency}
                   </TableCell>
                   <TableCell>
@@ -177,6 +224,17 @@ export default function TripsList() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
+                      <Button
+                        as={Link}
+                        to={`/trips/${trip._id}`}
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        color="primary"
+                        aria-label="عرض التفاصيل"
+                      >
+                        <HiOutlineEye className="h-4 w-4" />
+                      </Button>
                       <Button
                         as={Link}
                         to={`/trips/${trip._id}/edit`}
@@ -203,6 +261,7 @@ export default function TripsList() {
               ))}
             </TableBody>
           </Table>
+          <TablePagination meta={pagination} onChange={setPage} />
         </div>
       )}
 

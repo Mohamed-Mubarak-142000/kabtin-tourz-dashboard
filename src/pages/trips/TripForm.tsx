@@ -9,6 +9,8 @@ import {
   SelectItem,
   Switch,
   Textarea,
+  RadioGroup,
+  Radio,
 } from '@nextui-org/react'
 import { HiOutlineArrowRight } from 'react-icons/hi'
 import LoadingState from '@/components/common/LoadingState'
@@ -17,13 +19,15 @@ import ImageUploader from '@/components/common/ImageUploader'
 import MapPicker from '@/components/common/MapPicker'
 import StringListInput from '@/components/common/StringListInput'
 import { tripSchema, type TripFormValues } from '@/schemas'
-import { createTrip, getTrips, updateTrip } from '@/lib/services'
+import { createTrip, getTripById, updateTrip } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
 import { categoryOptions, currencyOptions } from '@/lib/constants'
+import { useConfirmation } from '@/contexts/ConfirmationContext'
 
 const emptyValues: TripFormValues = {
   title: '',
   category: 'umrah',
+  tripType: 'religious',
   price: 0,
   currency: 'EGP',
   duration: '',
@@ -32,7 +36,6 @@ const emptyValues: TripFormValues = {
   images: [],
   location: undefined,
   description: '',
-  featured: false,
   published: true,
 }
 
@@ -40,6 +43,7 @@ export default function TripForm() {
   const { id } = useParams()
   const isEdit = !!id
   const navigate = useNavigate()
+  const confirm = useConfirmation()
 
   const [loading, setLoading] = useState(isEdit)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -63,8 +67,8 @@ export default function TripForm() {
     setLoading(true)
     setLoadError(null)
     try {
-      const res = await getTrips()
-      const trip = res.data?.find((t) => t._id === id)
+      const res = await getTripById(id)
+      const trip = res.data
       if (!trip) {
         setLoadError('لم يتم العثور على الرحلة')
         return
@@ -72,6 +76,7 @@ export default function TripForm() {
       reset({
         title: trip.title,
         category: trip.category,
+        tripType: trip.tripType ?? (['hajj', 'umrah'].includes(trip.category) ? 'religious' : 'tourism'),
         price: trip.price,
         currency: trip.currency,
         duration: trip.duration,
@@ -80,7 +85,6 @@ export default function TripForm() {
         images: trip.images ?? [],
         location: trip.location,
         description: trip.description,
-        featured: trip.featured,
         published: trip.published,
       })
     } catch (err) {
@@ -96,6 +100,13 @@ export default function TripForm() {
   }, [id])
 
   const onSubmit = async (values: TripFormValues) => {
+    const accepted = await confirm({
+      title: isEdit ? 'تأكيد تعديل الرحلة' : 'تأكيد إضافة الرحلة',
+      message: `هل تريد ${isEdit ? 'حفظ تعديلات' : 'إضافة'} الرحلة "${values.title}"؟`,
+      confirmLabel: 'حفظ',
+      confirmColor: 'primary',
+    })
+    if (!accepted) return
     setSubmitError(null)
     try {
       if (isEdit && id) {
@@ -112,7 +123,6 @@ export default function TripForm() {
   const includes = watch('includes')
   const images = watch('images')
   const location = watch('location')
-  const featured = watch('featured')
   const published = watch('published')
 
   if (loading) return <LoadingState />
@@ -222,21 +232,26 @@ export default function TripForm() {
             />
           </div>
 
-          <div className="flex items-center gap-6 md:col-span-2">
-            <Switch
-              isSelected={featured}
-              onValueChange={(v) => setValue('featured', v)}
-              color="secondary"
-            >
-              رحلة مميزة
-            </Switch>
+          <div className="flex flex-col gap-4 md:col-span-2">
+            <Controller
+              control={control}
+              name="tripType"
+              render={({ field }) => (
+                <RadioGroup label="نوع الرحلة" orientation="horizontal" value={field.value} onValueChange={field.onChange} classNames={{ wrapper: 'gap-6' }}>
+                  <Radio value="religious" color="primary">رحلة دينية</Radio>
+                  <Radio value="tourism" color="secondary">رحلة سياحية</Radio>
+                </RadioGroup>
+              )}
+            />
+            <div className="flex flex-wrap items-center gap-6">
             <Switch
               isSelected={published}
               onValueChange={(v) => setValue('published', v)}
               color="primary"
             >
-              منشورة
+              {published ? 'منشورة' : 'غير منشورة'}
             </Switch>
+            </div>
           </div>
         </div>
 

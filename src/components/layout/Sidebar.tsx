@@ -12,6 +12,7 @@ import {
   HiOutlineX,
 } from 'react-icons/hi'
 import { useAuth } from '@/contexts/AuthContext'
+import { useConfirmation } from '@/contexts/ConfirmationContext'
 
 type NavItem = {
   to: string
@@ -37,6 +38,7 @@ type SidebarProps = {
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const { logout } = useAuth()
+  const confirm = useConfirmation()
   const [logoError, setLogoError] = useState(false)
 
   return (
@@ -49,7 +51,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         />
       )}
       <aside
-        className={`fixed inset-y-0 right-0 z-40 w-64 shrink-0 transform border-l border-stone-200 bg-white transition-transform duration-200 dark:border-stone-800 dark:bg-stone-900 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 right-0 z-40 flex h-dvh w-64 shrink-0 transform flex-col border-l border-stone-200 bg-white transition-transform duration-200 dark:border-stone-800 dark:bg-stone-900 lg:sticky lg:top-0 lg:translate-x-0 ${
           open ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
         }`}
       >
@@ -80,7 +82,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           </button>
         </div>
 
-        <nav className="flex flex-col gap-1 p-3">
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -101,7 +103,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           ))}
 
           <button
-            onClick={logout}
+            onClick={async () => {
+              if (await confirm({ title: 'تسجيل الخروج', message: 'هل تريد تسجيل الخروج من لوحة التحكم؟', confirmLabel: 'تسجيل الخروج', confirmColor: 'danger' })) logout()
+            }}
             className="mt-4 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
           >
             <HiOutlineLogout className="h-5 w-5 shrink-0" />

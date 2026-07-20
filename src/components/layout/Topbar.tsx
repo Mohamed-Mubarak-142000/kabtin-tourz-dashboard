@@ -2,6 +2,7 @@ import { Switch, Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem }
 import { HiOutlineMenu, HiOutlineMoon, HiOutlineSun, HiOutlineLogout } from 'react-icons/hi'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { useConfirmation } from '@/contexts/ConfirmationContext'
 
 type TopbarProps = {
   onMenuClick: () => void
@@ -10,6 +11,7 @@ type TopbarProps = {
 export default function Topbar({ onMenuClick }: TopbarProps) {
   const { theme, toggleTheme } = useTheme()
   const { username, logout } = useAuth()
+  const confirm = useConfirmation()
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-stone-200 bg-white/80 px-4 backdrop-blur dark:border-stone-800 dark:bg-stone-900/80">
@@ -52,7 +54,9 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
               key="logout"
               color="danger"
               startContent={<HiOutlineLogout className="h-4 w-4" />}
-              onPress={logout}
+              onPress={async () => {
+                if (await confirm({ title: 'تسجيل الخروج', message: 'هل تريد تسجيل الخروج من لوحة التحكم؟', confirmLabel: 'تسجيل الخروج', confirmColor: 'danger' })) logout()
+              }}
             >
               تسجيل خروج
             </DropdownItem>

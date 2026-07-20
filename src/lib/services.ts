@@ -7,11 +7,13 @@ import type {
   FaqInput,
   Lead,
   LeadStatus,
+  LeadInput,
   Settings,
   Testimonial,
   TestimonialInput,
   Trip,
   TripInput,
+  PaginatedData,
 } from '@/types'
 
 // ---- Auth ----
@@ -24,15 +26,29 @@ export async function login(username: string, password: string) {
 }
 
 // ---- Trips ----
-export async function getTrips(category?: string) {
+export async function getTrips(
+  filters: { category?: string; tripType?: string; search?: string; page?: number; limit?: number } = {},
+  signal?: AbortSignal,
+) {
   const res = await api.get<ApiResponse<Trip[]>>('/trips', {
-    params: category ? { category } : undefined,
+    params: filters,
+    signal,
   })
+  return res.data
+}
+
+export async function getPaginatedTrips(filters: { category?: string; tripType?: string; search?: string; page: number; limit: number }, signal?: AbortSignal) {
+  const res = await api.get<ApiResponse<PaginatedData<Trip>>>('/trips', { params: filters, signal })
   return res.data
 }
 
 export async function getTrip(slug: string) {
   const res = await api.get<ApiResponse<Trip>>(`/trips/${slug}`)
+  return res.data
+}
+
+export async function getTripById(id: string) {
+  const res = await api.get<ApiResponse<Trip>>(`/trips/id/${id}`)
   return res.data
 }
 
@@ -57,6 +73,11 @@ export async function getBranches() {
   return res.data
 }
 
+export async function getPaginatedBranches(page: number, limit = 5) {
+  const res = await api.get<ApiResponse<PaginatedData<Branch>>>('/branches', { params: { page, limit } })
+  return res.data
+}
+
 export async function createBranch(payload: BranchInput) {
   const res = await api.post<ApiResponse<Branch>>('/branches', payload)
   return res.data
@@ -75,6 +96,11 @@ export async function deleteBranch(id: string) {
 // ---- Testimonials ----
 export async function getTestimonials() {
   const res = await api.get<ApiResponse<Testimonial[]>>('/testimonials')
+  return res.data
+}
+
+export async function getPaginatedTestimonials(page: number, limit = 5) {
+  const res = await api.get<ApiResponse<PaginatedData<Testimonial>>>('/testimonials', { params: { page, limit } })
   return res.data
 }
 
@@ -99,6 +125,11 @@ export async function getFaqs() {
   return res.data
 }
 
+export async function getPaginatedFaqs(page: number, limit = 5) {
+  const res = await api.get<ApiResponse<PaginatedData<Faq>>>('/faqs', { params: { page, limit } })
+  return res.data
+}
+
 export async function createFaq(payload: FaqInput) {
   const res = await api.post<ApiResponse<Faq>>('/faqs', payload)
   return res.data
@@ -120,8 +151,18 @@ export async function reorderFaqs(order: { id: string; order: number }[]) {
 }
 
 // ---- Leads ----
+export async function createLead(payload: LeadInput) {
+  const res = await api.post<ApiResponse<Lead>>('/leads', payload)
+  return res.data
+}
+
 export async function getLeads() {
   const res = await api.get<ApiResponse<Lead[]>>('/leads')
+  return res.data
+}
+
+export async function getPaginatedLeads(page: number, limit = 5) {
+  const res = await api.get<ApiResponse<PaginatedData<Lead>>>('/leads', { params: { page, limit } })
   return res.data
 }
 

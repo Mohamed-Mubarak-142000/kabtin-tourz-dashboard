@@ -11,13 +11,21 @@ import { apiErrorMessage } from '@/lib/api'
 import { staggerContainerVariant, staggerItemVariant } from '@/lib/animationVariants'
 import type { Lead } from '@/types'
 
-const statusColors: Record<Lead['status'], 'primary' | 'warning' | 'success'> = {
+const statusColors: Record<Lead['status'], 'primary' | 'warning' | 'success' | 'secondary' | 'danger' | 'default'> = {
   new: 'warning',
   contacted: 'primary',
+  confirmed: 'secondary',
+  payment_pending: 'warning',
+  paid: 'success',
+  cancelled: 'danger',
   closed: 'success',
 }
 
 const statusLabels: Record<Lead['status'], string> = {
+  confirmed: 'مؤكد',
+  payment_pending: 'بانتظار الدفع',
+  paid: 'تم الدفع',
+  cancelled: 'ملغي',
   new: 'جديد',
   contacted: 'تم التواصل',
   closed: 'مغلق',

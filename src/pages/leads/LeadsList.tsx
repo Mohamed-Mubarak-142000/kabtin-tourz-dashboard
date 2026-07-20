@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Table,
   TableHeader,
@@ -11,37 +12,57 @@ import {
   SelectItem,
   Chip,
 } from '@nextui-org/react'
-import { HiOutlineTrash } from 'react-icons/hi'
+import { HiOutlinePlus, HiOutlineTrash } from 'react-icons/hi'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import ConfirmDialog from '@/components/common/ConfirmDialog'
-import { deleteLead, getLeads, updateLeadStatus } from '@/lib/services'
+import TablePagination from '@/components/common/TablePagination'
+import { deleteLead, getPaginatedLeads, updateLeadStatus } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
 import { leadStatusLabels, leadStatusOptions } from '@/lib/constants'
-import type { Lead, LeadStatus } from '@/types'
+import type { Lead, LeadStatus, PaginationMeta } from '@/types'
+import { useConfirmation } from '@/contexts/ConfirmationContext'
 
-const statusColors: Record<LeadStatus, 'warning' | 'primary' | 'success'> = {
+const PAGE_SIZE = 5
+
+const statusColors: Record<LeadStatus, 'warning' | 'primary' | 'success' | 'danger' | 'secondary' | 'default'> = {
   new: 'warning',
   contacted: 'primary',
-  closed: 'success',
+  confirmed: 'secondary',
+  payment_pending: 'warning',
+  paid: 'success',
+  cancelled: 'danger',
+  closed: 'default',
+}
+
+const nextStatuses: Record<LeadStatus, LeadStatus[]> = {
+  new: ['contacted', 'cancelled'],
+  contacted: ['confirmed', 'cancelled'],
+  confirmed: ['payment_pending', 'cancelled'],
+  payment_pending: ['paid', 'cancelled'],
+  paid: [],
+  cancelled: [],
+  closed: [],
 }
 
 export default function LeadsList() {
+  const navigate = useNavigate()
+  const confirm = useConfirmation()
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Lead | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState<PaginationMeta>({ page: 1, limit: PAGE_SIZE, total: 0, totalPages: 1 })
 
   const load = async () => {
     setLoading(true)
     setError(null)
     try {
-      const res = await getLeads()
-      const sorted = (res.data ?? []).slice().sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-      setLeads(sorted)
+      const res = await getPaginatedLeads(page, PAGE_SIZE)
+      setLeads(res.data?.items ?? [])
+      if (res.data?.pagination) setPagination(res.data.pagination)
     } catch (err) {
       setError(apiErrorMessage(err))
     } finally {
@@ -51,9 +72,11 @@ export default function LeadsList() {
 
   useEffect(() => {
     load()
-  }, [])
+  }, [page])
 
   const handleStatusChange = async (lead: Lead, status: LeadStatus) => {
+    if (status === lead.status) return
+    if (!(await confirm({ title: 'تأكيد تغيير الحالة', message: `هل تريد تغيير حالة طلب "${lead.name}" إلى "${leadStatusLabels[status]}"؟`, confirmLabel: 'تغيير الحالة', confirmColor: 'primary' }))) return
     const prev = leads
     setLeads((cur) => cur.map((l) => (l._id === lead._id ? { ...l, status } : l)))
     try {
@@ -80,11 +103,14 @@ export default function LeadsList() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
         <h1 className="page-title">طلبات الحجز</h1>
         <p className="text-sm text-stone-500 dark:text-stone-400">
           الطلبات الواردة من نموذج الحجز في الموقع، الأحدث أولاً
         </p>
+        </div>
+        <Button color="primary" startContent={<HiOutlinePlus className="h-5 w-5" />} onPress={() => navigate('/leads/new')}>إنشاء حجز</Button>
       </div>
 
       {loading ? (
@@ -109,12 +135,32 @@ export default function LeadsList() {
             <TableBody emptyContent="لا توجد طلبات حجز بعد">
               {leads.map((lead) => (
                 <TableRow key={lead._id}>
-                  <TableCell className="font-medium">{lead.name}</TableCell>
-                  <TableCell dir="ltr">{lead.whatsapp}</TableCell>
-                  <TableCell>{lead.serviceCategory}</TableCell>
+                  <TableCell>
+                    <div className="min-w-40">
+                      <p className="font-medium">{lead.name}</p>
+                      <p className="text-xs text-stone-500">{lead.nationality} · {lead.identityNumber}</p>
+                      {lead.email && <p dir="ltr" className="text-left text-xs text-stone-500">{lead.email}</p>}
+                    </div>
+                  </TableCell>
+                  <TableCell dir="ltr"><div>{lead.whatsapp}</div>{lead.phone && <div className="text-xs text-stone-500">{lead.phone}</div>}</TableCell>
+                  <TableCell>
+                    <div className="min-w-40">
+                      <p className="font-medium">{lead.tripTitle ?? lead.serviceCategory}</p>
+                      {lead.totalPrice != null && <p className="text-sm font-bold text-primary-600">{lead.totalPrice.toLocaleString('ar-EG')} {lead.currency}</p>}
+                    </div>
+                  </TableCell>
                   <TableCell>{lead.branch}</TableCell>
                   <TableCell>{lead.guests}</TableCell>
-                  <TableCell>{lead.roomType}</TableCell>
+                  <TableCell>
+                    <div>{lead.roomType}</div>
+                    <div className="text-xs text-stone-500">{lead.paymentMethod}</div>
+                    {lead.paymentProof && (
+                      <a href={lead.paymentProof} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-2 text-xs text-primary-600 hover:underline">
+                        <img src={lead.paymentProof} alt="إيصال التحويل" className="h-10 w-10 rounded-md object-cover" />
+                        عرض الإيصال
+                      </a>
+                    )}
+                  </TableCell>
                   <TableCell className="max-w-[200px] truncate">{lead.message}</TableCell>
                   <TableCell>
                     <Select
@@ -130,7 +176,7 @@ export default function LeadsList() {
                         </Chip>
                       )}
                     >
-                      {leadStatusOptions.map((opt) => (
+                      {leadStatusOptions.filter((opt) => opt.value === lead.status || nextStatuses[lead.status].includes(opt.value)).map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
                           {opt.label}
                         </SelectItem>
@@ -156,6 +202,7 @@ export default function LeadsList() {
               ))}
             </TableBody>
           </Table>
+          <TablePagination meta={pagination} onChange={setPage} />
         </div>
       )}
 

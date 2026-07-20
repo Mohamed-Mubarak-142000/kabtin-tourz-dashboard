@@ -11,6 +11,7 @@ import RatingInput from '@/components/common/RatingInput'
 import { testimonialSchema, type TestimonialFormValues } from '@/schemas'
 import { createTestimonial, getTestimonials, updateTestimonial } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
+import { useConfirmation } from '@/contexts/ConfirmationContext'
 import { sourceOptions } from '@/lib/constants'
 
 const emptyValues: TestimonialFormValues = {
@@ -25,6 +26,7 @@ export default function TestimonialForm() {
   const { id } = useParams()
   const isEdit = !!id
   const navigate = useNavigate()
+  const confirm = useConfirmation()
 
   const [loading, setLoading] = useState(isEdit)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -74,6 +76,7 @@ export default function TestimonialForm() {
   }, [id])
 
   const onSubmit = async (values: TestimonialFormValues) => {
+    if (!(await confirm({ title: isEdit ? 'تأكيد تعديل التقييم' : 'تأكيد إضافة التقييم', message: `هل تريد حفظ تقييم "${values.name}"؟`, confirmLabel: 'حفظ', confirmColor: 'primary' }))) return
     setSubmitError(null)
     try {
       if (isEdit && id) {

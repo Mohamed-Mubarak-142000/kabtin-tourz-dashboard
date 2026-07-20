@@ -8,8 +8,8 @@ export type LoginFormValues = z.infer<typeof loginSchema>
 
 const locationSchema = z
   .object({
-    lat: z.number(),
-    lng: z.number(),
+    lat: z.number().min(-90).max(90),
+    lng: z.number().min(-180).max(180),
     address: z.string().optional(),
   })
   .optional()
@@ -19,6 +19,7 @@ export const tripSchema = z.object({
   category: z.enum(['hajj', 'umrah', 'flights', 'domestic', 'international', 'visa'], {
     errorMap: () => ({ message: 'اختر الفئة' }),
   }),
+  tripType: z.enum(['religious', 'tourism']),
   price: z.coerce.number().min(0, 'السعر يجب أن يكون رقمًا موجبًا'),
   currency: z.string().min(1, 'العملة مطلوبة'),
   duration: z.string().min(1, 'المدة مطلوبة'),
@@ -27,7 +28,6 @@ export const tripSchema = z.object({
   images: z.array(z.string()).default([]),
   location: locationSchema,
   description: z.string().min(1, 'الوصف مطلوب'),
-  featured: z.boolean().default(false),
   published: z.boolean().default(true),
 })
 export type TripFormValues = z.infer<typeof tripSchema>

@@ -5,6 +5,7 @@ import { NextUIProvider } from '@nextui-org/react'
 import App from './App'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider } from './contexts/AuthContext'
+import { ConfirmationProvider } from './contexts/ConfirmationContext'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -13,7 +14,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <NextUIProvider>
         <ThemeProvider>
           <AuthProvider>
-            <App />
+            <ConfirmationProvider>
+              <App />
+            </ConfirmationProvider>
           </AuthProvider>
         </ThemeProvider>
       </NextUIProvider>

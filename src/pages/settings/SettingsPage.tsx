@@ -9,6 +9,7 @@ import StringListInput from '@/components/common/StringListInput'
 import { settingsSchema, type SettingsFormValues } from '@/schemas'
 import { getSettings, updateSettings } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
+import { useConfirmation } from '@/contexts/ConfirmationContext'
 
 const emptyValues: SettingsFormValues = {
   hero: { title: '', subtitle: '', images: [] },
@@ -20,6 +21,7 @@ const emptyValues: SettingsFormValues = {
 }
 
 export default function SettingsPage() {
+  const confirm = useConfirmation()
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -56,6 +58,7 @@ export default function SettingsPage() {
   }, [])
 
   const onSubmit = async (values: SettingsFormValues) => {
+    if (!(await confirm({ title: 'تأكيد حفظ الإعدادات', message: 'هل تريد حفظ تغييرات إعدادات الموقع؟', confirmLabel: 'حفظ', confirmColor: 'primary' }))) return
     setSubmitError(null)
     setSaved(false)
     try {

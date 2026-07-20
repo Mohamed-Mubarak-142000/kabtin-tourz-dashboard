@@ -15,10 +15,13 @@ import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiStar } from 'react-ic
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import ConfirmDialog from '@/components/common/ConfirmDialog'
-import { deleteTestimonial, getTestimonials } from '@/lib/services'
+import TablePagination from '@/components/common/TablePagination'
+import { deleteTestimonial, getPaginatedTestimonials } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
 import { sourceLabels } from '@/lib/constants'
-import type { Testimonial } from '@/types'
+import type { PaginationMeta, Testimonial } from '@/types'
+
+const PAGE_SIZE = 5
 
 export default function TestimonialsList() {
   const navigate = useNavigate()
@@ -27,13 +30,16 @@ export default function TestimonialsList() {
   const [error, setError] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Testimonial | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState<PaginationMeta>({ page: 1, limit: PAGE_SIZE, total: 0, totalPages: 1 })
 
   const load = async () => {
     setLoading(true)
     setError(null)
     try {
-      const res = await getTestimonials()
-      setItems(res.data ?? [])
+      const res = await getPaginatedTestimonials(page, PAGE_SIZE)
+      setItems(res.data?.items ?? [])
+      if (res.data?.pagination) setPagination(res.data.pagination)
     } catch (err) {
       setError(apiErrorMessage(err))
     } finally {
@@ -43,7 +49,7 @@ export default function TestimonialsList() {
 
   useEffect(() => {
     load()
-  }, [])
+  }, [page])
 
   const handleDelete = async () => {
     if (!deleteTarget) return
@@ -140,6 +146,7 @@ export default function TestimonialsList() {
               ))}
             </TableBody>
           </Table>
+          <TablePagination meta={pagination} onChange={setPage} />
         </div>
       )}
 

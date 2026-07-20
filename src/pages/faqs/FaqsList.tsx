@@ -17,18 +17,23 @@ import {
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import ConfirmDialog from '@/components/common/ConfirmDialog'
+import TablePagination from '@/components/common/TablePagination'
 import SortableFaqItem from './SortableFaqItem'
 import FaqFormModal from './FaqFormModal'
-import { createFaq, deleteFaq, getFaqs, reorderFaqs, updateFaq } from '@/lib/services'
+import { createFaq, deleteFaq, getPaginatedFaqs, reorderFaqs, updateFaq } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
-import type { Faq } from '@/types'
+import type { Faq, PaginationMeta } from '@/types'
 import type { FaqFormValues } from '@/schemas'
+import { useConfirmation } from '@/contexts/ConfirmationContext'
+
+const PAGE_SIZE = 5
 
 // Drag-and-drop reordering uses @dnd-kit/sortable rather than plain up/down
 // buttons: it gives a native-feeling reorder UX for a short list like FAQs
 // with a small, well-maintained dependency (already used nowhere else, but
 // worth the ~15kb given this is the one page whose entire purpose is ordering).
 export default function FaqsList() {
+  const confirm = useConfirmation()
   const [faqs, setFaqs] = useState<Faq[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -37,6 +42,8 @@ export default function FaqsList() {
   const [editing, setEditing] = useState<Faq | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Faq | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState<PaginationMeta>({ page: 1, limit: PAGE_SIZE, total: 0, totalPages: 1 })
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
@@ -44,8 +51,9 @@ export default function FaqsList() {
     setLoading(true)
     setError(null)
     try {
-      const res = await getFaqs()
-      setFaqs((res.data ?? []).slice().sort((a, b) => a.order - b.order))
+      const res = await getPaginatedFaqs(page, PAGE_SIZE)
+      setFaqs(res.data?.items ?? [])
+      if (res.data?.pagination) setPagination(res.data.pagination)
     } catch (err) {
       setError(apiErrorMessage(err))
     } finally {
@@ -55,12 +63,13 @@ export default function FaqsList() {
 
   useEffect(() => {
     load()
-  }, [])
+  }, [page])
 
   const persistOrder = async (ordered: Faq[]) => {
     setIsSaving(true)
     try {
-      await reorderFaqs(ordered.map((f, i) => ({ id: f._id, order: i })))
+      const offset = (page - 1) * PAGE_SIZE
+      await reorderFaqs(ordered.map((f, i) => ({ id: f._id, order: offset + i })))
     } catch (err) {
       setError(apiErrorMessage(err, 'فشل حفظ الترتيب'))
     } finally {
@@ -68,9 +77,10 @@ export default function FaqsList() {
     }
   }
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
+    if (!(await confirm({ title: 'تأكيد إعادة الترتيب', message: 'هل تريد حفظ الترتيب الجديد للأسئلة؟', confirmLabel: 'حفظ الترتيب', confirmColor: 'primary' }))) return
     setFaqs((items) => {
       const oldIndex = items.findIndex((i) => i._id === active.id)
       const newIndex = items.findIndex((i) => i._id === over.id)
@@ -91,6 +101,7 @@ export default function FaqsList() {
   }
 
   const handleSubmit = async (values: FaqFormValues) => {
+    if (!(await confirm({ title: editing ? 'تأكيد تعديل السؤال' : 'تأكيد إضافة السؤال', message: `هل تريد حفظ السؤال "${values.question}"؟`, confirmLabel: 'حفظ', confirmColor: 'primary' }))) return
     try {
       if (editing) {
         const updated = await updateFaq(editing._id, { ...values, order: editing.order })
@@ -98,7 +109,7 @@ export default function FaqsList() {
           cur.map((f) => (f._id === editing._id ? (updated.data ?? { ...f, ...values }) : f))
         )
       } else {
-        const created = await createFaq({ ...values, order: faqs.length })
+        const created = await createFaq({ ...values, order: pagination.total })
         if (created.data) setFaqs((cur) => [...cur, created.data!])
       }
       setModalOpen(false)
@@ -157,6 +168,8 @@ export default function FaqsList() {
           </SortableContext>
         </DndContext>
       )}
+
+      {!loading && !error && <TablePagination meta={pagination} onChange={setPage} />}
 
       <FaqFormModal
         isOpen={modalOpen}

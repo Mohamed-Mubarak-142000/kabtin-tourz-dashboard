@@ -4,12 +4,14 @@ import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
 import TripsList from '@/pages/trips/TripsList'
 import TripForm from '@/pages/trips/TripForm'
+import TripView from '@/pages/trips/TripView'
 import BranchesList from '@/pages/branches/BranchesList'
 import BranchForm from '@/pages/branches/BranchForm'
 import TestimonialsList from '@/pages/testimonials/TestimonialsList'
 import TestimonialForm from '@/pages/testimonials/TestimonialForm'
 import FaqsList from '@/pages/faqs/FaqsList'
 import LeadsList from '@/pages/leads/LeadsList'
+import LeadForm from '@/pages/leads/LeadForm'
 import SettingsPage from '@/pages/settings/SettingsPage'
 import NotFound from '@/pages/NotFound'
 
@@ -23,6 +25,7 @@ export default function App() {
 
         <Route path="/trips" element={<TripsList />} />
         <Route path="/trips/new" element={<TripForm />} />
+        <Route path="/trips/:id" element={<TripView />} />
         <Route path="/trips/:id/edit" element={<TripForm />} />
 
         <Route path="/branches" element={<BranchesList />} />
@@ -36,6 +39,7 @@ export default function App() {
         <Route path="/faqs" element={<FaqsList />} />
 
         <Route path="/leads" element={<LeadsList />} />
+        <Route path="/leads/new" element={<LeadForm />} />
 
         <Route path="/settings" element={<SettingsPage />} />
       </Route>

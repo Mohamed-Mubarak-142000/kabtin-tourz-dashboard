@@ -14,6 +14,7 @@ type ConfirmDialogProps = {
   confirmLabel?: string
   cancelLabel?: string
   isLoading?: boolean
+  confirmColor?: 'primary' | 'danger' | 'warning' | 'success'
   onConfirm: () => void
   onClose: () => void
 }
@@ -25,6 +26,7 @@ export default function ConfirmDialog({
   confirmLabel = 'حذف',
   cancelLabel = 'إلغاء',
   isLoading,
+  confirmColor = 'danger',
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
@@ -39,7 +41,7 @@ export default function ConfirmDialog({
           <Button variant="light" onPress={onClose}>
             {cancelLabel}
           </Button>
-          <Button color="danger" onPress={onConfirm} isLoading={isLoading}>
+          <Button color={confirmColor} onPress={onConfirm} isLoading={isLoading}>
             {confirmLabel}
           </Button>
         </ModalFooter>
