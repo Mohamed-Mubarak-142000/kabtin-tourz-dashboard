@@ -23,6 +23,7 @@ import { createTrip, getTripById, updateTrip } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
 import { categoryOptions, currencyOptions } from '@/lib/constants'
 import { useConfirmation } from '@/contexts/ConfirmationContext'
+import { currencyLabels } from '@/lib/currency'
 
 const emptyValues: TripFormValues = {
   title: '',
@@ -200,7 +201,7 @@ export default function TripForm() {
               >
                 {currencyOptions.map((c) => (
                   <SelectItem key={c} value={c}>
-                    {c}
+                    {currencyLabels[c] ?? c}
                   </SelectItem>
                 ))}
               </Select>

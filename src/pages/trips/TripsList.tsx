@@ -30,6 +30,7 @@ import { apiErrorMessage } from '@/lib/api'
 import { categoryLabels, categoryOptions, tripTypeLabels, tripTypeOptions } from '@/lib/constants'
 import type { PaginationMeta, Trip } from '@/types'
 import { useConfirmation } from '@/contexts/ConfirmationContext'
+import { formatCurrency } from '@/lib/currency'
 
 const PAGE_SIZE = 5
 
@@ -213,7 +214,7 @@ export default function TripsList() {
                     {categoryLabels[trip.category]}
                   </TableCell>
                   <TableCell className="font-medium text-stone-700 dark:text-stone-200">
-                    {trip.price} {trip.currency}
+                    {formatCurrency(trip.price, trip.currency)}
                   </TableCell>
                   <TableCell>
                     <Switch

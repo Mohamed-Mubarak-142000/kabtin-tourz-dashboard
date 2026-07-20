@@ -20,6 +20,7 @@ import { apiErrorMessage } from '@/lib/api'
 import { categoryLabels, leadStatusLabels } from '@/lib/constants'
 import { staggerContainerVariant, staggerItemVariant } from '@/lib/animationVariants'
 import type { Lead, LeadStatus, Testimonial, Trip, TripCategory } from '@/types'
+import { formatCurrency } from '@/lib/currency'
 
 const statusColors: Record<LeadStatus, 'primary' | 'warning' | 'success' | 'secondary' | 'danger' | 'default'> = {
   new: 'warning', contacted: 'primary', confirmed: 'secondary', payment_pending: 'warning',
@@ -100,14 +101,14 @@ export default function Dashboard() {
           <motion.div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" variants={staggerContainerVariant}>
             <motion.div variants={staggerItemVariant}><StatCard label="إجمالي الحجوزات" value={leads.length} icon={<HiOutlineInboxIn className="h-6 w-6" />} /></motion.div>
             <motion.div variants={staggerItemVariant}><StatCard label="طلبات تحتاج متابعة" value={leads.filter((lead) => lead.status === 'new').length} icon={<HiOutlineClock className="h-6 w-6" />} accent="secondary" /></motion.div>
-            <motion.div variants={staggerItemVariant}><StatCard label="الإيراد المتوقع" value={`${analytics.expectedRevenue.toLocaleString('ar-EG')} EGP`} icon={<HiOutlineCash className="h-6 w-6" />} /></motion.div>
+            <motion.div variants={staggerItemVariant}><StatCard label="الإيراد المتوقع" value={formatCurrency(analytics.expectedRevenue, 'EGP')} icon={<HiOutlineCash className="h-6 w-6" />} /></motion.div>
             <motion.div variants={staggerItemVariant}><StatCard label="متوسط التقييم" value={analytics.averageRating ? analytics.averageRating.toFixed(1) : '—'} icon={<HiOutlineStar className="h-6 w-6" />} accent="secondary" /></motion.div>
           </motion.div>
 
           <motion.div variants={staggerItemVariant} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <MiniStat label="رحلات منشورة" value={trips.filter((trip) => trip.published).length} total={trips.length} icon={<HiOutlineMap />} />
             <MiniStat label="الفروع" value={branchesCount} icon={<HiOutlineOfficeBuilding />} />
-            <MiniStat label="إيراد محصل" value={`${analytics.paidRevenue.toLocaleString('ar-EG')} EGP`} icon={<HiOutlineCash />} />
+            <MiniStat label="إيراد محصل" value={formatCurrency(analytics.paidRevenue, 'EGP')} icon={<HiOutlineCash />} />
             <MiniStat label="آراء العملاء" value={testimonials.length} icon={<HiOutlineStar />} />
           </motion.div>
 
@@ -130,7 +131,7 @@ export default function Dashboard() {
                 <div className="mt-6 flex flex-col items-center gap-7 sm:flex-row">
                   <Donut data={analytics.categoryData} total={trips.length} />
                   <div className="grid flex-1 grid-cols-2 gap-3">
-                    {analytics.categoryData.map((item) => <div key={item.category} className="flex items-center gap-2 text-sm"><span className="h-2.5 w-2.5 rounded-full" style={{ background: item.color }} /><span className="text-stone-500 dark:text-stone-400">{item.label}</span><b className="ms-auto">{item.count}</b></div>)}
+                    {analytics.categoryData.map((item) => <div key={item.category} className="flex items-center gap-2 text-sm"><span className="h-2.5 w-2.5 rounded-full" style={{ background: item.color }} /><span className="text-stone-500 dark:text-stone-400">{item.label}</span><b>{item.count}</b></div>)}
                   </div>
                 </div>
               ) : <EmptyChart />}
@@ -168,7 +169,7 @@ export default function Dashboard() {
                         <td className="px-6 py-4 font-bold"><Link to={`/leads/${lead._id}`} className="hover:text-primary-600">{lead.name}</Link></td>
                         <td className="px-6 py-4" dir="ltr">{lead.whatsapp}</td>
                         <td className="max-w-[220px] truncate px-6 py-4">{lead.tripTitle ?? lead.serviceCategory}</td>
-                        <td className="px-6 py-4 font-bold text-primary-600 dark:text-primary-300">{lead.totalPrice?.toLocaleString('ar-EG')} {lead.currency}</td>
+                        <td className="px-6 py-4 font-bold text-primary-600 dark:text-primary-300">{formatCurrency(lead.totalPrice ?? 0, lead.currency)}</td>
                         <td className="px-6 py-4"><Chip size="sm" color={statusColors[lead.status]} variant="flat">{leadStatusLabels[lead.status]}</Chip></td>
                         <td className="px-6 py-4 text-stone-500 dark:text-stone-400">{new Date(lead.createdAt).toLocaleDateString('ar-EG')}</td>
                       </tr>

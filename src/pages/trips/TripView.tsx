@@ -21,6 +21,7 @@ import { getTripById } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
 import { categoryLabels, tripTypeLabels } from '@/lib/constants'
 import type { Trip } from '@/types'
+import { formatCurrency } from '@/lib/currency'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -116,7 +117,7 @@ export default function TripView() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <InfoCard icon={HiOutlineCurrencyDollar} label="السعر" value={`${trip.price.toLocaleString('ar-EG')} ${trip.currency}`} accent />
+        <InfoCard icon={HiOutlineCurrencyDollar} label="السعر" value={formatCurrency(trip.price, trip.currency)} accent />
         <InfoCard icon={HiOutlineCalendar} label="مدة الرحلة" value={trip.duration || 'غير محددة'} />
         <InfoCard icon={HiOutlineOfficeBuilding} label="الإقامة والفندق" value={trip.hotelInfo || 'غير محدد'} />
         <InfoCard icon={HiOutlineTag} label="كود الرحلة" value={trip.slug} ltr />

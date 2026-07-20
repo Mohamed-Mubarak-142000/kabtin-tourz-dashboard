@@ -9,6 +9,7 @@ import { createLead, getBranches, getTrips, uploadImages } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
 import { useConfirmation } from '@/contexts/ConfirmationContext'
 import type { Branch, LeadInput, Trip } from '@/types'
+import { formatCurrency } from '@/lib/currency'
 
 const paymentMethods = [
   { value: 'cash', label: 'الدفع نقدًا في الفرع' },
@@ -106,7 +107,7 @@ export default function LeadForm() {
           <Controller control={control} name="roomType" rules={{ required: true }} render={({ field }) => <Select label="نوع الغرفة" variant="bordered" selectedKeys={field.value ? [field.value] : []} onSelectionChange={(keys) => field.onChange(Array.from(keys)[0])}>{roomTypes.map((room) => <SelectItem key={room.value}>{room.label}</SelectItem>)}</Select>} />
         </FormSection>
 
-        {selectedTrip && <div className="grid overflow-hidden rounded-2xl bg-gradient-to-l from-primary-900 to-primary-700 text-white sm:grid-cols-3"><Summary label="سعر الفرد" value={`${selectedTrip.price.toLocaleString('ar-EG')} ${selectedTrip.currency}`} /><Summary label="عدد الأفراد" value={String(guests)} /><Summary label="الإجمالي" value={`${(selectedTrip.price * guests).toLocaleString('ar-EG')} ${selectedTrip.currency}`} accent /></div>}
+        {selectedTrip && <div className="grid overflow-hidden rounded-2xl bg-gradient-to-l from-primary-900 to-primary-700 text-white sm:grid-cols-3"><Summary label="سعر الفرد" value={formatCurrency(selectedTrip.price, selectedTrip.currency)} /><Summary label="عدد الأفراد" value={String(guests)} /><Summary label="الإجمالي" value={formatCurrency(selectedTrip.price * guests, selectedTrip.currency)} accent /></div>}
 
         <FormSection title="الدفع والملاحظات">
           <Controller control={control} name="paymentMethod" render={({ field }) => <Select label="طريقة الدفع" variant="bordered" selectedKeys={[field.value]} onSelectionChange={(keys) => field.onChange(Array.from(keys)[0])}>{paymentMethods.map((method) => <SelectItem key={method.value}>{method.label}</SelectItem>)}</Select>} />

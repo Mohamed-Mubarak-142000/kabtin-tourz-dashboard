@@ -20,6 +20,7 @@ import { getBranches, getLead } from '@/lib/services'
 import { apiErrorMessage } from '@/lib/api'
 import { leadStatusLabels } from '@/lib/constants'
 import type { Lead, LeadStatus } from '@/types'
+import { formatCurrency } from '@/lib/currency'
 
 const statusColors: Record<LeadStatus, 'warning' | 'primary' | 'success' | 'danger' | 'secondary' | 'default'> = {
   new: 'warning',
@@ -120,8 +121,8 @@ export default function LeadView() {
             <Info label="الرحلة" value={lead.tripTitle ?? lead.serviceCategory} wide />
             <Info label="عدد الأفراد" value={String(lead.guests)} />
             <Info label="نوع الغرفة" value={roomTypeLabels[lead.roomType] ?? lead.roomType} />
-            <Info label="سعر الفرد" value={`${lead.unitPrice.toLocaleString('ar-EG')} ${lead.currency}`} />
-            <Info label="الإجمالي" value={`${lead.totalPrice.toLocaleString('ar-EG')} ${lead.currency}`} accent />
+            <Info label="سعر الفرد" value={formatCurrency(lead.unitPrice, lead.currency)} />
+            <Info label="الإجمالي" value={formatCurrency(lead.totalPrice, lead.currency)} accent />
           </div>
         </section>
 
@@ -129,7 +130,7 @@ export default function LeadView() {
           <SectionTitle icon={HiOutlineCreditCard} title="بيانات الدفع" />
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <Info label="طريقة الدفع" value={paymentMethodLabels[lead.paymentMethod]} />
-            <Info label="المبلغ المطلوب" value={`${lead.totalPrice.toLocaleString('ar-EG')} ${lead.currency}`} accent />
+            <Info label="المبلغ المطلوب" value={formatCurrency(lead.totalPrice, lead.currency)} accent />
           </div>
           {lead.paymentProof ? (
             <a href={lead.paymentProof} target="_blank" rel="noreferrer" className="mt-5 block overflow-hidden rounded-xl border border-stone-200 dark:border-white/10">

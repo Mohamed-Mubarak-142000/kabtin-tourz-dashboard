@@ -22,6 +22,7 @@ import { apiErrorMessage } from '@/lib/api'
 import { leadStatusLabels, leadStatusOptions } from '@/lib/constants'
 import type { Lead, LeadStatus, PaginationMeta } from '@/types'
 import { useConfirmation } from '@/contexts/ConfirmationContext'
+import { formatCurrency } from '@/lib/currency'
 
 const PAGE_SIZE = 5
 
@@ -137,7 +138,7 @@ export default function LeadsList() {
                   <TableCell dir="ltr">{lead.whatsapp}</TableCell>
                   <TableCell className="font-medium">{lead.tripTitle ?? lead.serviceCategory}</TableCell>
                   <TableCell className="font-bold text-primary-600">
-                    {lead.totalPrice != null ? `${lead.totalPrice.toLocaleString('ar-EG')} ${lead.currency}` : '—'}
+                    {lead.totalPrice != null ? formatCurrency(lead.totalPrice, lead.currency) : '—'}
                   </TableCell>
                   <TableCell>
                     <Select
