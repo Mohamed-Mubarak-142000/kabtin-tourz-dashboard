@@ -146,6 +146,14 @@ export type Stats = {
   googleRating: number
 }
 
+export type QrCode = {
+  _id: string
+  targetUrl: string
+  imageUrl: string
+  createdAt: string
+  updatedAt: string
+}
+
 export type Settings = {
   hero: {
     title: string

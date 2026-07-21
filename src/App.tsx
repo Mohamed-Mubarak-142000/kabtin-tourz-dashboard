@@ -14,6 +14,7 @@ import LeadsList from '@/pages/leads/LeadsList'
 import LeadForm from '@/pages/leads/LeadForm'
 import LeadView from '@/pages/leads/LeadView'
 import SettingsPage from '@/pages/settings/SettingsPage'
+import QrCodePage from '@/pages/qr-codes/QrCodePage'
 import NotFound from '@/pages/NotFound'
 
 export default function App() {
@@ -44,6 +45,8 @@ export default function App() {
         <Route path="/leads/:id" element={<LeadView />} />
 
         <Route path="/settings" element={<SettingsPage />} />
+
+        <Route path="/qr-codes" element={<QrCodePage />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

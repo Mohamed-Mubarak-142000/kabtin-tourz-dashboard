@@ -7,6 +7,7 @@ import {
   HiOutlineStar,
   HiOutlineQuestionMarkCircle,
   HiOutlineInboxIn,
+  HiOutlineQrcode,
   HiOutlineCog,
   HiOutlineLogout,
   HiOutlineX,
@@ -28,6 +29,7 @@ const navItems: NavItem[] = [
   { to: '/testimonials', label: 'التقييمات', icon: HiOutlineStar },
   { to: '/faqs', label: 'الأسئلة الشائعة', icon: HiOutlineQuestionMarkCircle },
   { to: '/leads', label: 'طلبات الحجز', icon: HiOutlineInboxIn },
+  { to: '/qr-codes', label: 'باركود الموقع', icon: HiOutlineQrcode },
   { to: '/settings', label: 'الإعدادات', icon: HiOutlineCog },
 ]
 

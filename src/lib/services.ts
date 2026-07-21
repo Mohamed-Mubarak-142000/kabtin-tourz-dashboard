@@ -8,6 +8,7 @@ import type {
   Lead,
   LeadStatus,
   LeadInput,
+  QrCode,
   Settings,
   Testimonial,
   TestimonialInput,
@@ -189,6 +190,12 @@ export async function getSettings() {
 
 export async function updateSettings(payload: Settings) {
   const res = await api.put<ApiResponse<Settings>>('/settings', payload)
+  return res.data
+}
+
+// ---- QR Code ----
+export async function getSiteQrCode() {
+  const res = await api.get<ApiResponse<QrCode>>('/qr-codes')
   return res.data
 }
 
